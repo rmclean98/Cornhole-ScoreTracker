@@ -1,10 +1,15 @@
 import numpy as np
 import cv2 as cv
+import Camera
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
 import sys
 import os
+
+boards = []
+holes = []
+img = None
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -16,6 +21,8 @@ class MainWindow(QMainWindow):
         self._centralWidget.setLayout(self.generalLayout)
         self._createPlayers()
         self._createButtons()
+        self.cameraWindow = Camera.Camera()
+        self.cameraWindow.show()
 
     def _createPlayers(self):
         playersLayout = QGridLayout()
@@ -45,29 +52,27 @@ class MainWindow(QMainWindow):
 
     def _createButtons(self):
         buttonsLayout = QVBoxLayout()
-        self.calButton = QPushButton('Calabreate Camera')
-        self.scanBagsButton = QPushButton('Scan Bags')
-        self.calButton.clicked.connect(self._showCamera)
-        buttonsLayout.addWidget(self.calButton)
-        buttonsLayout.addWidget(self.scanBagsButton)
+        self.showHideButton = QPushButton('Show/Hide Camera')
+        self.calibrateButton = QPushButton('Calibrate')
+        self.showHideButton.clicked.connect(self._showCamera)
+        buttonsLayout.addWidget(self.showHideButton)
+        buttonsLayout.addWidget(self.calibrateButton)
         self.generalLayout.addLayout(buttonsLayout, 0, 0)
 
-    def _showCamera(self):
-        vid = cv.VideoCapture(0)
 
-        while(True):
-            ret, frame = vid.read()
-            cv.imshow('frame', frame)
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                break
-        vid.release()
-        cv.destroyAllWindows()
+    def _showCamera(self):
+        if self.showHideButton.isVisible():
+            self.cameraWindow.setVisible(False)
+        else:
+            self.cameraWindow.setVisible(True)
+
+
 
 
 
 if __name__ == '__main__':
     app = QApplication([])
     app.setStyle('Fusion')
-    window = MainWindow()
-    window.show()
+    mainWindow = MainWindow()
+    mainWindow.show()
     sys.exit(app.exec_())
