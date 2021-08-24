@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 import Camera
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
 import sys
@@ -36,11 +36,15 @@ class MainWindow(QMainWindow):
         #self.player1.setFixedWidth(100)
         self.score1.setFixedHeight(25)
         self.score1.setFixedWidth(25)
+        self.score1.setText('0')
+        self.score1.setReadOnly(True)
         self.score1.setAlignment(Qt.AlignCenter)
         self.player2.setFixedHeight(25)
         #self.player2.setFixedWidth(100)
         self.score2.setFixedHeight(25)
         self.score2.setFixedWidth(25)
+        self.score2.setText('0')
+        self.score1.setReadOnly(True)
         self.score2.setAlignment(Qt.AlignCenter)
         playersLayout.addWidget(self.playersLabel, 0, 2)
         playersLayout.addWidget(self.scoreLabel, 0, 3)
@@ -61,12 +65,10 @@ class MainWindow(QMainWindow):
 
 
     def _showCamera(self):
-        if self.showHideButton.isVisible():
-            self.cameraWindow.setVisible(False)
+        if self.cameraWindow.isVisible():
+            self.cameraWindow.hide()
         else:
-            self.cameraWindow.setVisible(True)
-
-
+            self.cameraWindow.show()
 
 
 
