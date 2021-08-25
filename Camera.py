@@ -9,24 +9,7 @@ import os
 
 rect = []
 circle = []
-
-class ClickWidget(QWidget):
-    pressPos = None
-    clicked = pyqtSignal()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.pressPos = event.pos()
-
-    def mouseReleaseEvent(self, event):
-        # ensure that the left button was pressed *and* released within the
-        # geometry of the widget; if so, emit the signal;
-        if (self.pressPos is not None and
-            event.button() == Qt.LeftButton and
-            event.pos() in self.rect()):
-                self.clicked.emit()
-        self.pressPos = None
-
+circleBool = False
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
@@ -35,11 +18,31 @@ class VideoThread(QThread):
         super().__init__()
         self._run_flag = True
 
+    def findCircle(self, img):
+        global circleBool
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        gray_blurred = cv.blur(gray, (3, 3))
+        detected_circles = cv.HoughCircles(gray_blurred, cv.HOUGH_GRADIENT, 1, 20,
+        param1 = 50, param2 = 30, minRadius = 1, maxRadius = 40)
+
+        if detected_circles is not None:
+            detected_circles = np.uint16(np.around(detected_circles))
+
+        for pt in detected_circles[0, :]:
+            a, b, r = pt[0], pt[1], pt[2]
+            cv.circle(img, (a, b), r, (0, 255, 0), 2)
+            cv.circle(img, (a, b), 1, (0, 0, 255), 3)
+            cv.imshow("Detected Circle", img)
+            cv.waitKey(0)
+
     def run(self):
+        global circleBool
         # capture from web cam
         cap = cv.VideoCapture(0)
         while self._run_flag:
             ret, cv_img = cap.read()
+            if(circleBool):
+                self.findCircle(cv_img)
             if ret:
                 self.change_pixmap_signal.emit(cv_img)
         # shut down capture system
@@ -96,11 +99,15 @@ class Camera(QWidget):
         return QPixmap.fromImage(p)
 
     def _calibrate(self):
-        global rect
+        global rect, findCircle
         if self.drawCircle.isChecked() & self.drawRect.isChecked():
             self.drawRect.setChecked(False)
             self.drawCircle.setChecked(False)
-            pass
+        if(self.drawCircle.isChecked() == False):
+            circleBool = True
+
+
+    def mousePressEvent(self, QMouseEvent):
         if self.drawCircle.isChecked():
-            clicked = QtCore.pyqtSignal(QtGui.QMouseEvent)
-        if self.drawRect.isChecked():
+            print(self.QMouseEvent.globalPos())
+            circle.append(self.QMouseEvent.globalPos())
