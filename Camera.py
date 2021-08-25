@@ -8,24 +8,8 @@ import sys
 import os
 
 rect = []
-circle = []
-
-class ClickWidget(QWidget):
-    pressPos = None
-    clicked = pyqtSignal()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.pressPos = event.pos()
-
-    def mouseReleaseEvent(self, event):
-        # ensure that the left button was pressed *and* released within the
-        # geometry of the widget; if so, emit the signal;
-        if (self.pressPos is not None and
-            event.button() == Qt.LeftButton and
-            event.pos() in self.rect()):
-                self.clicked.emit()
-        self.pressPos = None
+circlePoints = []
+sendCircle = False
 
 
 class VideoThread(QThread):
@@ -35,11 +19,32 @@ class VideoThread(QThread):
         super().__init__()
         self._run_flag = True
 
+    def FindCircle(self, img):
+        global circlePoints
+        bwimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        bwimg = cv.medianBlur(bwimg,5)
+
+        cimg = cv.cvtColor(bwimg,cv.COLOR_GRAY2BGR)
+        circles = cv.HoughCircles(bwimg,cv.HOUGH_GRADIENT,1,20,
+                                    param1=50,param2=30,minRadius=30,maxRadius=40)
+        circlePoints = np.uint16(np.around(circles))
+
+
     def run(self):
+        global circlePoints, sendCircle
+        filePath = os.path.join("Images", "vid1.mp4")
         # capture from web cam
-        cap = cv.VideoCapture(0)
+        cap = cv.VideoCapture(filePath)
         while self._run_flag:
             ret, cv_img = cap.read()
+            if sendCircle:
+                self.FindCircle(cv_img)
+                if circlePoints.size > 0:
+                    for i in circlePoints[0,:]:
+                        # draw the outer circle
+                        cv.circle(cv_img,(i[0],i[1]),i[2],(0,255,0),2)
+                        # draw the center of the circle
+                        cv.circle(cv_img,(i[0],i[1]),2,(0,0,255),3)
             if ret:
                 self.change_pixmap_signal.emit(cv_img)
         # shut down capture system
@@ -96,11 +101,14 @@ class Camera(QWidget):
         return QPixmap.fromImage(p)
 
     def _calibrate(self):
-        global rect
+        global rect, sendCircle, circlePoints
         if self.drawCircle.isChecked() & self.drawRect.isChecked():
             self.drawRect.setChecked(False)
             self.drawCircle.setChecked(False)
             pass
         if self.drawCircle.isChecked():
-            clicked = QtCore.pyqtSignal(QtGui.QMouseEvent)
+            sendCircle = True
+        if not self.drawCircle.isChecked():
+            sendCircle = False
         if self.drawRect.isChecked():
+            print(circlePoints)
