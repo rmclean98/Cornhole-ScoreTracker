@@ -105,7 +105,11 @@ class Camera(QWidget):
         if self.drawCircle.isChecked() & self.drawRect.isChecked():
             self.drawRect.setChecked(False)
             self.drawCircle.setChecked(False)
-            pass
+        if(self.drawCircle.isChecked() == False):
+            circleBool = True
+
+
+    def mousePressEvent(self, QMouseEvent):
         if self.drawCircle.isChecked():
             sendCircle = True
         if not self.drawCircle.isChecked():
