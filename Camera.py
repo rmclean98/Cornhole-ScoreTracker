@@ -10,6 +10,24 @@ import os
 rect = []
 circle = []
 
+class ClickWidget(QWidget):
+    pressPos = None
+    clicked = pyqtSignal()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.pressPos = event.pos()
+
+    def mouseReleaseEvent(self, event):
+        # ensure that the left button was pressed *and* released within the
+        # geometry of the widget; if so, emit the signal;
+        if (self.pressPos is not None and
+            event.button() == Qt.LeftButton and
+            event.pos() in self.rect()):
+                self.clicked.emit()
+        self.pressPos = None
+
+
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
@@ -42,14 +60,17 @@ class Camera(QWidget):
         self.setFixedSize(self.disply_width, self.display_height)
         self.image_label = QLabel(self)
         self.drawCircle = QPushButton('Draw Cirlce')
+        self.drawCircle.setCheckable(True)
         self.drawRect = QPushButton('Draw Rectangle')
+        self.drawRect.setCheckable(True)
         #self.image_label.size(self.disply_width, self.display_height)
         vbox = QVBoxLayout()
         vbox.addWidget(self.drawCircle)
         vbox.addWidget(self.drawRect)
         vbox.addWidget(self.image_label)
         self.setLayout(vbox)
-        self.drawRect.clicked.connect(self._drawRect)
+        self.drawRect.clicked.connect(self._calibrate)
+        self.drawCircle.clicked.connect(self._calibrate)
         self.thread = VideoThread()
         # connect its signal to the update_image slot
         self.thread.change_pixmap_signal.connect(self.update_image)
@@ -74,5 +95,12 @@ class Camera(QWidget):
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
 
-    def _drawRect(self):
+    def _calibrate(self):
         global rect
+        if self.drawCircle.isChecked() & self.drawRect.isChecked():
+            self.drawRect.setChecked(False)
+            self.drawCircle.setChecked(False)
+            pass
+        if self.drawCircle.isChecked():
+            clicked = QtCore.pyqtSignal(QtGui.QMouseEvent)
+        if self.drawRect.isChecked():
