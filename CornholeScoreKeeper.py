@@ -1,14 +1,13 @@
 import numpy as np
 import cv2 as cv
 import Camera
+from Calibrate import *
 from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
 import sys
 import os
 
-boards = []
-holes = []
 img = None
 
 class MainWindow(QMainWindow):
@@ -21,8 +20,10 @@ class MainWindow(QMainWindow):
         self._centralWidget.setLayout(self.generalLayout)
         self._createPlayers()
         self._createButtons()
+        self.circlePoints = []
+        self.rectPoints = []
         self.cameraWindow = Camera.Camera()
-        self.cameraWindow.show()
+        #self.cameraWindow.show()
 
     def _createPlayers(self):
         playersLayout = QGridLayout()
@@ -59,6 +60,7 @@ class MainWindow(QMainWindow):
         self.showHideButton = QPushButton('Show/Hide Camera')
         self.calibrateButton = QPushButton('Calibrate')
         self.showHideButton.clicked.connect(self._showCamera)
+        self.calibrateButton.clicked.connect(self._calibrate)
         buttonsLayout.addWidget(self.showHideButton)
         buttonsLayout.addWidget(self.calibrateButton)
         self.generalLayout.addLayout(buttonsLayout, 0, 0)
@@ -69,6 +71,11 @@ class MainWindow(QMainWindow):
             self.cameraWindow.hide()
         else:
             self.cameraWindow.show()
+
+    def _calibrate(self):
+        calibrate = Calibrate()
+        self.circlePoints = calibrate._getCirclePoints()
+        print(circlePoints)
 
 
 

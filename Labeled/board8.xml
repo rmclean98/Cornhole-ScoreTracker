@@ -1,0 +1,38 @@
+<annotation>
+	<folder>Images</folder>
+	<filename>board8.jpg</filename>
+	<path>/Users/ryanmclean/Documents/Projects/Cornhole-ScoreTracker/Images/board8.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>977</width>
+		<height>1024</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Cornhole Board</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>134</xmin>
+			<ymin>573</ymin>
+			<xmax>885</xmax>
+			<ymax>1002</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>Cornhole Board</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>540</xmin>
+			<ymin>73</ymin>
+			<xmax>898</xmax>
+			<ymax>751</ymax>
+		</bndbox>
+	</object>
+</annotation>
