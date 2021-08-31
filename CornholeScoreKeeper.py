@@ -75,7 +75,11 @@ class MainWindow(QMainWindow):
     def _calibrate(self):
         calibrate = Calibrate()
         self.circlePoints = calibrate._getCirclePoints()
-        print(circlePoints)
+        print("circle Point")
+        print(self.circlePoints)
+        self.rectPoints = calibrate._getRectPoints()
+        print("Rectangle Points")
+        print(self.rectPoints)
 
 
 
