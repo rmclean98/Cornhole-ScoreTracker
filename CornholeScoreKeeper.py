@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
         self._createButtons()
         self.circlePoints = []
         self.rectPoints = []
+        self.boardPoints = None
         self.cameraWindow = Camera.Camera()
         #self.cameraWindow.show()
 
@@ -80,6 +81,10 @@ class MainWindow(QMainWindow):
         self.rectPoints = calibrate._getRectPoints()
         print("Rectangle Points")
         print(self.rectPoints)
+        self.boardPoints = calibrate._getContour()
+        print("contour:")
+        print(self.boardPoints)
+        self.cameraWindow._setPoints(self.circlePoints, self.boardPoints)
 
 
 

@@ -80,38 +80,47 @@ class Calibrate():
     def _closestContour(self, value):
         if value == 1:
             if len(self.rectPoints) == 4:
-                boardX = []
-                boardY = []
-                boardArea = cv.contourArea(np.array(self.rectPoints))
+                board = np.array(self.rectPoints)
+                boardArea = cv.contourArea(board)
                 print("board area: ")
                 print(boardArea)
                 cimg = self.img.copy()
                 imgray = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
-                ret, thresh = cv.threshold(imgray, 240, 255, 0)
-                contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+                imgray = cv.medianBlur(imgray,5)
+                edge = cv.Canny(imgray, 60, 180)
+                mask = np.zeros_like(edge)
+                cv.fillPoly(mask, pts = [board], color =(255,255,255))
+                masked = cv.bitwise_and(edge, mask)
+                #cv.imshow("maked", masked)
+                ret, thresh = cv.threshold(imgray, 144, 255, 0)
+                contours, hierarchy = cv.findContours(masked, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
                 maxcnt = 0
                 index = 0
                 count = 0
                 for contour in contours:
-                    if len(contour) == 4 :
+                    if len(contour) >= 4 :
+                        """
                         cnt = np.reshape(contour, [4,2])
                         cnt = cnt.tolist()
-                        print(cnt)
-                        print("countor area: ")
+                        #print(cnt)
                         cntX = []
                         cntY = []
                         for point in cnt:
                             cntX.append(point[0])
                             cntY.append(point[1])
-                        area = self.PolyArea(cntX, cntY)
-                        #area = cv.contourArea(cnt)
+                        #area = self.PolyArea(cntX, cntY)
+                        """
+                        area = cv.contourArea(contour)
+                        print("countor area: ")
                         print(area)
                         if area > maxcnt and area < boardArea:
                             maxcnt = area
                             index = count
                     count += 1
                         #cv.putText(img, "rectangle", (x, y), cv.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0))
-                cv.drawContours(cimg, contours[index], 0, (0, 0, 0), 5)
+                    cnt = contours[index]
+                cv.drawContours(cimg, [cnt], 0, (0, 255, 0), 5)
+                self.boardContour = cnt
                 cv.imshow(self.windowName, cimg)
 
     def rectPrem(self,event,x,y,flags,param):
@@ -123,8 +132,10 @@ class Calibrate():
                 cv.imshow(self.windowName, cimg)
 
     def getPoints(self):
-        filePath = os.path.join("Images", "vid1.mp4")
+        filePath = os.path.join("Images", "vid2.mp4")
         cam = cv.VideoCapture(filePath)
+        cam.set(3, 1280)
+        cam.set(4, 720)
         self.img = cam.read()[1]
         img = self.img
         cv.namedWindow(self.windowName)
