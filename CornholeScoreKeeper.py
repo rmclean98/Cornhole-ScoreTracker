@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 import Camera
-from Calibrate import *
+from CalibrateBoard import *
 from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
@@ -22,7 +22,9 @@ class MainWindow(QMainWindow):
         self._createButtons()
         self.circlePoints = []
         self.rectPoints = []
+        self.boardPoints = None
         self.cameraWindow = Camera.Camera()
+        self.generalLayout.addWidget(self.cameraWindow, 1, 0)
         #self.cameraWindow.show()
 
     def _createPlayers(self):
@@ -58,9 +60,9 @@ class MainWindow(QMainWindow):
     def _createButtons(self):
         buttonsLayout = QVBoxLayout()
         self.showHideButton = QPushButton('Show/Hide Camera')
-        self.calibrateButton = QPushButton('Calibrate')
+        self.calibrateButton = QPushButton('Calibrate Board')
         self.showHideButton.clicked.connect(self._showCamera)
-        self.calibrateButton.clicked.connect(self._calibrate)
+        self.calibrateButton.clicked.connect(self._calibrateBoard)
         buttonsLayout.addWidget(self.showHideButton)
         buttonsLayout.addWidget(self.calibrateButton)
         self.generalLayout.addLayout(buttonsLayout, 0, 0)
@@ -72,14 +74,18 @@ class MainWindow(QMainWindow):
         else:
             self.cameraWindow.show()
 
-    def _calibrate(self):
-        calibrate = Calibrate()
-        self.circlePoints = calibrate._getCirclePoints()
+    def _calibrateBoard(self):
+        calibrateBoard = CalibrateBoard()
+        self.circlePoints = calibrateBoard._getCirclePoints()
         print("circle Point")
         print(self.circlePoints)
-        self.rectPoints = calibrate._getRectPoints()
+        self.rectPoints = calibrateBoard._getRectPoints()
         print("Rectangle Points")
         print(self.rectPoints)
+        self.boardPoints = calibrateBoard._getContour()
+        print("contour:")
+        print(self.boardPoints)
+        self.cameraWindow._setPoints(self.circlePoints, self.boardPoints)
 
 
 
