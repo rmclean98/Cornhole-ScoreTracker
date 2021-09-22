@@ -82,7 +82,11 @@ class MainWindow(QMainWindow):
         self.rectPoints = calibrateBoard._getRectPoints()
         print("Rectangle Points")
         print(self.rectPoints)
+<<<<<<< HEAD
         self.boardPoints = calibrateBoard._getContour()
+=======
+        self.boardPoints = calibrate._getContour()
+>>>>>>> e83632dfcd3c890f09c06e3a6ae856d734f96123
         print("contour:")
         print(self.boardPoints)
         self.cameraWindow._setPoints(self.circlePoints, self.boardPoints)
