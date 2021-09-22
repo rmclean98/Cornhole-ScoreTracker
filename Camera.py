@@ -1,11 +1,7 @@
 import numpy as np
 import cv2 as cv
 import CornholeScoreKeeper
-<<<<<<< HEAD
 from CalibrateBoard import *
-=======
-from Calibrate import *
->>>>>>> e83632dfcd3c890f09c06e3a6ae856d734f96123
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, Qt, QThread
 from PyQt5.QtGui import QPalette, QPixmap, QImage, QCursor
 from PyQt5.QtWidgets import *
@@ -33,11 +29,7 @@ class VideoThread(QThread):
             self.draw = True
 
     def run(self):
-<<<<<<< HEAD
         filePath = os.path.join("Images", "vid1.mp4")
-=======
-        filePath = os.path.join("Images", "vid2.mp4")
->>>>>>> e83632dfcd3c890f09c06e3a6ae856d734f96123
         # capture from web cam
         cap = cv.VideoCapture(filePath)
         while self._run_flag:
@@ -88,7 +80,6 @@ class Camera(QWidget):
 
     def _drawContours(self):
         if self.showContours.isChecked():
-<<<<<<< HEAD
             self.drawing = True
         else:
             self.drawing = False
@@ -96,14 +87,6 @@ class Camera(QWidget):
     def _setPoints(self, circle, board):
         self.boardPoints = board
         self.circlePoints = circle
-=======
-            self.thread.setDraw(1)
-        else:
-            self.thread.setDraw(0)
-
-    def _setPoints(self, circle, board):
-        self.thread.setPoints(circle, board)
->>>>>>> e83632dfcd3c890f09c06e3a6ae856d734f96123
 
     def closeEvent(self, event):
         self.thread.stop()
