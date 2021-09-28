@@ -4,3 +4,5 @@ opencv-contrib-python
 PyQt5
 matplotlib
 onnx
+torch
+pandas

@@ -1,20 +1,39 @@
 import cv2 as cv
 import numpy as np
+import os
+import torch
 
-model = cv.dnn.readNetFromONNX('CornholeBBBestV1.onnx')
+weightfilepath = os.path.join("CornholeBBBestV1.pt")
+# Model
+model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
+#model.conf = 0.40
+filePathimg  = os.path.join("Images", "vid1.mp4")
+cap = cv.VideoCapture(filePathimg)
+#img = cv.imread(filePathimg)
+while(True):
+    ret, img = cap.read()
+    cimg = img.copy()
+    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    results = model(img)
+    #results.print()
+    if not results.pandas().xyxy[0].empty:
+        for index, row in results.pandas().xyxy[0].iterrows():
+            start = (int(row['xmin']), int(row['ymin']))
+            end = (int(row['xmax']), int(row['ymax']))
+            strText = row['name'] + " - " + str(row['confidence'])
+            cv.rectangle(cimg, start, end, (255, 255, 255), 2)
+            cv.putText(cimg, strText, start, cv.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+    cv.imshow("game", cimg)
+    key = cv.waitKey(20)
+    if key == ord('q'):
+        break
 
-filePath = os.path.join("Images", "Game4.jpg")
-image = cv.imread(filePath)
-blob = cv.dnn.blobFromImage(image=image, scalefactor=0.01, size=(224, 224), mean=(104, 117, 123))
+cap.release()
+cv.destroyAllWindows()
+"""
+results.print()
+results.show()  # or .show()
 
-model.setInput(blob)
-outputs = model.forward()
-
-final_outputs = outputs[0]
-final_outputs = final_outputs.reshape(1000, 1)
-probs = np.exp(final_outputs) / np.sum(np.exp(final_outputs))
-final_prob = np.max(probs) * 100.
-cv.putText(image, "hehe", (25, 50), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-cv.imshow('Image', image)
-cv.waitKey(0)
-cv.imwrite('result_image.jpg', image)
+results.xyxy[0]  # img1 predictions (tensor)
+results.pandas().xyxy[0]
+"""
