@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 import sys
+import torch
 
 class CalibrateBoard():
     """Takes a picture from the camera to use to find the hole and the board"""
@@ -16,6 +17,7 @@ class CalibrateBoard():
         self.circlePoints = []
         self.rectPoints = []
         self.boardContour = None
+        self.detection = None
         self.getPoints()
 
     def _getCirclePoints(self):
@@ -99,17 +101,6 @@ class CalibrateBoard():
                 count = 0
                 for contour in contours:
                     if len(contour) >= 4 :
-                        """
-                        cnt = np.reshape(contour, [4,2])
-                        cnt = cnt.tolist()
-                        #print(cnt)
-                        cntX = []
-                        cntY = []
-                        for point in cnt:
-                            cntX.append(point[0])
-                            cntY.append(point[1])
-                        #area = self.PolyArea(cntX, cntY)
-                        """
                         area = cv.contourArea(contour)
                         print("countor area: ")
                         print(area)
@@ -122,6 +113,11 @@ class CalibrateBoard():
                 cv.drawContours(cimg, [cnt], 0, (0, 255, 0), 5)
                 self.boardContour = cnt
                 cv.imshow(self.windowName, cimg)
+    def _boardpoints(self, value):
+        if value == 1:
+            for index, row in self.detection.iterrows():
+                if row['name'] == "Cornhole Board":
+                    print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
 
     def rectPrem(self,event,x,y,flags,param):
         cimg = self.img.copy()
@@ -138,12 +134,16 @@ class CalibrateBoard():
         cam.set(4, 720)
         self.img = cam.read()[1]
         img = self.img
+        model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')
+        results = model(img)
+        results.show()
+        self.detection = results.pandas().xyxy[0]
         cv.namedWindow(self.windowName)
         #cv.imshow(self.windowName, img)
         cv.createTrackbar("Hole Max Radius", self.windowName, 0, 100, self._maxRadius)
         cv.createTrackbar("Hole Min Radius", self.windowName, 0, 100, self._minRadius)
         cv.createTrackbar("Record Board Points", self.windowName, 0, 1, self._selectPoints)
-        cv.createTrackbar("Get Contour of Points", self.windowName, 0, 1, self._closestContour)
+        cv.createTrackbar("Get Contour of Points", self.windowName, 0, 1, self._boardpoints)
         cv.imshow(self.windowName, img)
         cv.setMouseCallback(self.windowName,self.rectPrem)
         cv.waitKey(0)
