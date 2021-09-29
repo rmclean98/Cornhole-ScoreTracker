@@ -81,6 +81,14 @@ class CalibrateBoard():
 
     def _closestContour(self, value):
         if value == 1:
+            for index, row in self.detection.iterrows():
+                if row['name'] == "Cornhole Board" and row['confidence'] > .7:
+                    print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
+                    if len(self.rectPoints) < 4:
+                        self.rectPoints.append([row['xmin'], row['ymin']])
+                        self.rectPoints.append([row['xmax'],  row['ymin']])
+                        self.rectPoints.append([row['xmax'], row['ymax']])
+                        self.rectPoints.append([row['xmin'],row['ymax'] ])
             if len(self.rectPoints) == 4:
                 board = np.array(self.rectPoints)
                 boardArea = cv.contourArea(board)
@@ -113,11 +121,44 @@ class CalibrateBoard():
                 cv.drawContours(cimg, [cnt], 0, (0, 255, 0), 5)
                 self.boardContour = cnt
                 cv.imshow(self.windowName, cimg)
+
     def _boardpoints(self, value):
         if value == 1:
             for index, row in self.detection.iterrows():
-                if row['name'] == "Cornhole Board":
+                if row['name'] == "Cornhole Board" and row['confidence'] > .7:
                     print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
+            if len(self.rectPoints) == 4:
+                board = np.array(self.rectPoints)
+                boardArea = cv.contourArea(board)
+                print("board area: ")
+                print(boardArea)
+                cimg = self.img.copy()
+                imgray = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
+                imgray = cv.medianBlur(imgray,5)
+                edge = cv.Canny(imgray, 60, 180)
+                mask = np.zeros_like(edge)
+                cv.fillPoly(mask, pts = [board], color =(255,255,255))
+                masked = cv.bitwise_and(edge, mask)
+                #cv.imshow("maked", masked)
+                ret, thresh = cv.threshold(imgray, 144, 255, 0)
+                contours, hierarchy = cv.findContours(masked, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+                maxcnt = 0
+                index = 0
+                count = 0
+                for contour in contours:
+                    if len(contour) >= 4 :
+                        area = cv.contourArea(contour)
+                        print("countor area: ")
+                        print(area)
+                        if area > maxcnt and area < boardArea:
+                            maxcnt = area
+                            index = count
+                    count += 1
+                        #cv.putText(img, "rectangle", (x, y), cv.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0))
+                    cnt = contours[index]
+                cv.drawContours(cimg, [cnt], 0, (0, 255, 0), 5)
+                self.boardContour = cnt
+                cv.imshow(self.windowName, cimg)
 
     def rectPrem(self,event,x,y,flags,param):
         cimg = self.img.copy()
@@ -136,14 +177,14 @@ class CalibrateBoard():
         img = self.img
         model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')
         results = model(img)
-        results.show()
+        results.print()
         self.detection = results.pandas().xyxy[0]
         cv.namedWindow(self.windowName)
         #cv.imshow(self.windowName, img)
         cv.createTrackbar("Hole Max Radius", self.windowName, 0, 100, self._maxRadius)
         cv.createTrackbar("Hole Min Radius", self.windowName, 0, 100, self._minRadius)
         cv.createTrackbar("Record Board Points", self.windowName, 0, 1, self._selectPoints)
-        cv.createTrackbar("Get Contour of Points", self.windowName, 0, 1, self._boardpoints)
+        cv.createTrackbar("Get Contour of Points", self.windowName, 0, 1, self._closestContour)
         cv.imshow(self.windowName, img)
         cv.setMouseCallback(self.windowName,self.rectPrem)
         cv.waitKey(0)
