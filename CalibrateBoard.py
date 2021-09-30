@@ -85,10 +85,10 @@ class CalibrateBoard():
                 if row['name'] == "Cornhole Board" and row['confidence'] > .7:
                     print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
                     if len(self.rectPoints) < 4:
-                        self.rectPoints.append([row['xmin'], row['ymin']])
-                        self.rectPoints.append([row['xmax'],  row['ymin']])
-                        self.rectPoints.append([row['xmax'], row['ymax']])
-                        self.rectPoints.append([row['xmin'],row['ymax'] ])
+                        self.rectPoints.append([int(row['xmin']), int(row['ymin'])])
+                        self.rectPoints.append([int(row['xmax']), int(row['ymin'])])
+                        self.rectPoints.append([int(row['xmax']), int(row['ymax'])])
+                        self.rectPoints.append([int(row['xmin']), int(row['ymax'])])
             if len(self.rectPoints) == 4:
                 board = np.array(self.rectPoints)
                 boardArea = cv.contourArea(board)
@@ -169,7 +169,7 @@ class CalibrateBoard():
                 cv.imshow(self.windowName, cimg)
 
     def getPoints(self):
-        filePath = os.path.join("Images", "vid2.mp4")
+        filePath = os.path.join("Images", "vid1.mp4")
         cam = cv.VideoCapture(filePath)
         cam.set(3, 1280)
         cam.set(4, 720)
