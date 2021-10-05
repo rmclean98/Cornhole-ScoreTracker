@@ -3,7 +3,7 @@ import numpy as np
 import os
 import torch
 
-weightfilepath = os.path.join("CornholeBBBestV1.pt")
+weightfilepath = os.path.join("best.pt")
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
 #model.conf = 0.40
@@ -18,11 +18,12 @@ while(True):
     #results.print()
     if not results.pandas().xyxy[0].empty:
         for index, row in results.pandas().xyxy[0].iterrows():
-            start = (int(row['xmin']), int(row['ymin']))
-            end = (int(row['xmax']), int(row['ymax']))
-            strText = row['name'] + " - " + str(row['confidence'])
-            cv.rectangle(cimg, start, end, (255, 255, 255), 2)
-            cv.putText(cimg, strText, start, cv.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+            if row['confidence'] > .5:
+                start = (int(row['xmin']), int(row['ymin']))
+                end = (int(row['xmax']), int(row['ymax']))
+                strText = row['name'] + " - " + str(row['confidence'])
+                cv.rectangle(cimg, start, end, (255, 255, 255), 2)
+                cv.putText(cimg, strText, start, cv.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
     cv.imshow("game", cimg)
     key = cv.waitKey(20)
     if key == ord('q'):

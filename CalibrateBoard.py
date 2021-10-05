@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import math
 import os
 import sys
 import torch
@@ -9,11 +10,8 @@ class CalibrateBoard():
 
     def __init__(self):
         super().__init__()
-        self.minRadius = 30
-        self.maxRadius = 50
         self.windowName = "Calibrate"
         self.img = None
-        self.drawing = False
         self.circlePoints = []
         self.rectPoints = []
         self.boardContour = None
@@ -29,147 +27,77 @@ class CalibrateBoard():
     def _getContour(self):
         return self.boardContour
 
-    def _maxRadius(self, value):
-        self.maxRadius = value
-        cimg = self.img.copy()
-        bwimg = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
-        bwimg = cv.medianBlur(bwimg,5)
-        circles = cv.HoughCircles(bwimg,cv.HOUGH_GRADIENT,2,100,
-                            param1=200,param2=100,minRadius=self.minRadius,maxRadius=value)
-        if circles is not None:
-            circles = np.uint16(np.around(circles))
-            self.circlePoints = circles
-            print(self.circlePoints)
-            for i in circles[0,:]:
-                # draw the outer circle
-                cv.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
-                # draw the center of the circle
-                cv.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
-        cv.imshow(self.windowName, cimg)
+    def _closestContour(self):
+        for index, row in self.detection.iterrows():
+            if row['name'] == "Cornhole Board" and row['confidence'] > .7:
+                print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
+                if len(self.rectPoints) == 0:
+                    self.rectPoints.append([int(row['xmin']), int(row['ymin'])])
+                    self.rectPoints.append([int(row['xmax']), int(row['ymin'])])
+                    self.rectPoints.append([int(row['xmax']), int(row['ymax'])])
+                    self.rectPoints.append([int(row['xmin']), int(row['ymax'])])
+        if len(self.rectPoints) == 4:
+            board = np.array(self.rectPoints)
+            boardArea = cv.contourArea(board)
+            print("board area: ")
+            print(boardArea)
+            cimg = self.img.copy()
+            imgray = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
+            imgray = cv.medianBlur(imgray,5)
+            edge = cv.Canny(imgray, 60, 180)
+            mask = np.zeros_like(edge)
+            cv.fillPoly(mask, pts = [board], color =(255,255,255))
+            masked = cv.bitwise_and(edge, mask)
+            ret, thresh = cv.threshold(imgray, 144, 255, 0)
+            contours, hierarchy = cv.findContours(masked, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+            maxcnt = 0
+            index = 0
+            count = 0
+            for contour in contours:
+                if len(contour) >= 4 :
+                    area = cv.contourArea(contour)
+                    print("countor area: ")
+                    print(area)
+                    if area > maxcnt and area < boardArea:
+                        maxcnt = area
+                        index = count
+                count += 1
+            cnt = contours[index]
+            self.boardContour = cnt
 
-
-    def _minRadius(self, value):
-        self.minRadius = value
-        cimg = self.img.copy()
-        bwimg = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
-        bwimg = cv.medianBlur(bwimg,5)
-        circles = cv.HoughCircles(bwimg,cv.HOUGH_GRADIENT,2,100,
-                            param1=200,param2=100,minRadius=value,maxRadius=self.maxRadius)
-        if circles is not None:
-            circles = np.uint16(np.around(circles))
-            self.circlePoints = circles
-            for i in circles[0,:]:
-                # draw the outer circle
-                cv.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
-                # draw the center of the circle
-                cv.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
-        cv.imshow(self.windowName, cimg)
-
-    def _selectPoints(self, value):
-        cimg = self.img.copy()
-        if value == 0:
-            self.drawing = False
-        else:
-            self.drawing = True
-            if len(self.rectPoints) > 0:
-                for i in self.rectPoints:
-                    cv.circle(cimg, (i[0], i[1]), radius=10, color=(255, 255, 255), thickness=-1)
-            cv.imshow(self.windowName, cimg)
-
-    def PolyArea(self,x,y):
-        return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
-
-    def _closestContour(self, value):
-        if value == 1:
-            for index, row in self.detection.iterrows():
-                if row['name'] == "Cornhole Board" and row['confidence'] > .7:
-                    print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
-                    if len(self.rectPoints) < 4:
-                        self.rectPoints.append([int(row['xmin']), int(row['ymin'])])
-                        self.rectPoints.append([int(row['xmax']), int(row['ymin'])])
-                        self.rectPoints.append([int(row['xmax']), int(row['ymax'])])
-                        self.rectPoints.append([int(row['xmin']), int(row['ymax'])])
-            if len(self.rectPoints) == 4:
-                board = np.array(self.rectPoints)
-                boardArea = cv.contourArea(board)
-                print("board area: ")
-                print(boardArea)
-                cimg = self.img.copy()
-                imgray = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
-                imgray = cv.medianBlur(imgray,5)
-                edge = cv.Canny(imgray, 60, 180)
-                mask = np.zeros_like(edge)
-                cv.fillPoly(mask, pts = [board], color =(255,255,255))
-                masked = cv.bitwise_and(edge, mask)
-                #cv.imshow("maked", masked)
-                ret, thresh = cv.threshold(imgray, 144, 255, 0)
-                contours, hierarchy = cv.findContours(masked, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-                maxcnt = 0
-                index = 0
-                count = 0
-                for contour in contours:
-                    if len(contour) >= 4 :
-                        area = cv.contourArea(contour)
-                        print("countor area: ")
-                        print(area)
-                        if area > maxcnt and area < boardArea:
-                            maxcnt = area
-                            index = count
-                    count += 1
-                        #cv.putText(img, "rectangle", (x, y), cv.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0))
-                    cnt = contours[index]
-                cv.drawContours(cimg, [cnt], 0, (0, 255, 0), 5)
-                self.boardContour = cnt
-                cv.imshow(self.windowName, cimg)
-
-    def _boardpoints(self, value):
-        if value == 1:
-            for index, row in self.detection.iterrows():
-                if row['name'] == "Cornhole Board" and row['confidence'] > .7:
-                    print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
-            if len(self.rectPoints) == 4:
-                board = np.array(self.rectPoints)
-                boardArea = cv.contourArea(board)
-                print("board area: ")
-                print(boardArea)
-                cimg = self.img.copy()
-                imgray = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
-                imgray = cv.medianBlur(imgray,5)
-                edge = cv.Canny(imgray, 60, 180)
-                mask = np.zeros_like(edge)
-                cv.fillPoly(mask, pts = [board], color =(255,255,255))
-                masked = cv.bitwise_and(edge, mask)
-                #cv.imshow("maked", masked)
-                ret, thresh = cv.threshold(imgray, 144, 255, 0)
-                contours, hierarchy = cv.findContours(masked, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-                maxcnt = 0
-                index = 0
-                count = 0
-                for contour in contours:
-                    if len(contour) >= 4 :
-                        area = cv.contourArea(contour)
-                        print("countor area: ")
-                        print(area)
-                        if area > maxcnt and area < boardArea:
-                            maxcnt = area
-                            index = count
-                    count += 1
-                        #cv.putText(img, "rectangle", (x, y), cv.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0))
-                    cnt = contours[index]
-                cv.drawContours(cimg, [cnt], 0, (0, 255, 0), 5)
-                self.boardContour = cnt
-                cv.imshow(self.windowName, cimg)
-
-    def rectPrem(self,event,x,y,flags,param):
-        cimg = self.img.copy()
-        if event == cv.EVENT_LBUTTONDOWN:
-            if self.drawing and len(self.rectPoints) <= 4:
-                self.rectPoints.append([x,y])
-                cv.circle(cimg, (x,y), radius=10, color=(255, 255, 255), thickness=-1)
-                cv.imshow(self.windowName, cimg)
+    def _cirlcepoints(self):
+        for index, row in self.detection.iterrows():
+            if row['name'] == "Cornhole Hole" and row['confidence'] > .7:
+                print(row['xmin'], row['ymin'], row['xmax'], row['ymax'])
+                if len(self.circlePoints) == 0:
+                    self.circlePoints.append([int(row['xmin']), int(row['ymin'])])
+                    self.circlePoints.append([int(row['xmax']), int(row['ymin'])])
+                    self.circlePoints.append([int(row['xmax']), int(row['ymax'])])
+                    self.circlePoints.append([int(row['xmin']), int(row['ymax'])])
+        if len(self.circlePoints) == 4:
+            circle = np.array(self.circlePoints)
+            circleArea = cv.contourArea(circle)
+            print("circle area: ")
+            print(circleArea)
+            cimg = self.img.copy()
+            imgray = cv.cvtColor(cimg, cv.COLOR_BGR2GRAY)
+            imgray = cv.medianBlur(imgray,5)
+            edge = cv.Canny(imgray, 60, 180)
+            mask = np.zeros_like(edge)
+            cv.fillPoly(mask, pts = [circle], color =(255,255,255))
+            masked = cv.bitwise_and(edge, mask)
+            circleRadius = math.sqrt((circleArea / math.pi))
+            circles = cv.HoughCircles(masked,cv.HOUGH_GRADIENT,2,100,
+                                param1=200,param2=100,minRadius=0,maxRadius=int(circleRadius))
+            if circles is not None:
+                circles = np.uint16(np.around(circles))
+                self.circlePoints = circles
+                print("circle Points:")
+                print(self.circlePoints)
 
     def getPoints(self):
-        filePath = os.path.join("Images", "vid1.mp4")
+        #filePath = os.path.join("Images", "vid1.mp4")
+        filePath = os.path.join("Images", "Game1.jpg")
         cam = cv.VideoCapture(filePath)
         cam.set(3, 1280)
         cam.set(4, 720)
@@ -177,15 +105,6 @@ class CalibrateBoard():
         img = self.img
         model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')
         results = model(img)
-        results.print()
         self.detection = results.pandas().xyxy[0]
-        cv.namedWindow(self.windowName)
-        #cv.imshow(self.windowName, img)
-        cv.createTrackbar("Hole Max Radius", self.windowName, 0, 100, self._maxRadius)
-        cv.createTrackbar("Hole Min Radius", self.windowName, 0, 100, self._minRadius)
-        cv.createTrackbar("Record Board Points", self.windowName, 0, 1, self._selectPoints)
-        cv.createTrackbar("Get Contour of Points", self.windowName, 0, 1, self._closestContour)
-        cv.imshow(self.windowName, img)
-        cv.setMouseCallback(self.windowName,self.rectPrem)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+        self._closestContour()
+        self._cirlcepoints()
