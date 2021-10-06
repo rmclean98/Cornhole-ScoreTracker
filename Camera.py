@@ -29,8 +29,8 @@ class VideoThread(QThread):
             self.draw = True
 
     def run(self):
-        #filePath = os.path.join("Images", "vid1.mp4")
-        filePath = os.path.join("Images", "Game1.jpg")
+        filePath = os.path.join("Images", "vid1.mp4")
+        #filePath = os.path.join("Images", "Game1.jpg")
         # capture from web cam
         cap = cv.VideoCapture(filePath)
         while self._run_flag:

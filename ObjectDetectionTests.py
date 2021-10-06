@@ -4,8 +4,10 @@ import os
 import torch
 
 weightfilepath = os.path.join("best.pt")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
+model = model.to(device)
 #model.conf = 0.40
 filePathimg  = os.path.join("Images", "vid1.mp4")
 cap = cv.VideoCapture(filePathimg)

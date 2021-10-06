@@ -96,8 +96,8 @@ class CalibrateBoard():
                 print(self.circlePoints)
 
     def getPoints(self):
-        #filePath = os.path.join("Images", "vid1.mp4")
-        filePath = os.path.join("Images", "Game1.jpg")
+        filePath = os.path.join("Images", "vid1.mp4")
+        #filePath = os.path.join("Images", "Game1.jpg")
         cam = cv.VideoCapture(filePath)
         cam.set(3, 1280)
         cam.set(4, 720)
