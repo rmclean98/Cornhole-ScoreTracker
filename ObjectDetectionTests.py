@@ -9,13 +9,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
 model = model.to(device)
 #model.conf = 0.40
-filePathimg  = os.path.join("Images", "vid1.mp4")
+filePathimg  = os.path.join("Images", "vid3.mp4")
 cap = cv.VideoCapture(filePathimg)
 #img = cv.imread(filePathimg)
 while(True):
     ret, img = cap.read()
     cimg = img.copy()
-    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    #img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
     results = model(img)
     #results.print()
     if not results.pandas().xyxy[0].empty:

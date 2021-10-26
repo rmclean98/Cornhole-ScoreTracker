@@ -96,14 +96,16 @@ class CalibrateBoard():
                 print(self.circlePoints)
 
     def getPoints(self):
-        filePath = os.path.join("Images", "vid1.mp4")
+        filePath = os.path.join("Images", "vid3.mp4")
         #filePath = os.path.join("Images", "Game1.jpg")
         cam = cv.VideoCapture(filePath)
         cam.set(3, 1280)
         cam.set(4, 720)
         self.img = cam.read()[1]
         img = self.img
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')
+        model = model.to(device)
         results = model(img)
         self.detection = results.pandas().xyxy[0]
         self._closestContour()
