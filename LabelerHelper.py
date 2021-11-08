@@ -2,16 +2,17 @@ import os
 import torch
 import numpy as np
 import cv2 as cv
+import pafy
 def nothing():
     pass
 
 def videoCap():
-    weightfilepath = os.path.join("best.pt")
+    weightfilepath = os.path.join("CornholeTrackerv5.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Model
     model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
     model = model.to(device)
-    filePath  = os.path.join("Images", "vid4.mp4")
+    filePath  = os.path.join("Images", "vid5.mp4")
     cap = cv.VideoCapture(filePath)
     count = 0
     imgCount = 0
