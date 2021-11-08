@@ -7,7 +7,7 @@ import torch
 import matplotlib.pyplot as plt
 
 
-weightfilepath = os.path.join("best.pt")
+weightfilepath = os.path.join("CornholeTrackerv4.pt")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
@@ -153,7 +153,7 @@ cv.waitKey(0)
 cv.destroyAllWindows()
 
 
-"""
+
 cap = cv.VideoCapture(filePath)
 
 object_detector = cv.createBackgroundSubtractorMOG2()

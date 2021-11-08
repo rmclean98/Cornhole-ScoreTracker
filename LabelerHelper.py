@@ -6,17 +6,19 @@ def nothing():
     pass
 
 def videoCap():
-    weightfilepath = os.path.join("best.pt")
+    weightfilepath = os.path.join("CornholeTrackerv4.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Model
     model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
     model = model.to(device)
-    filePath  = os.path.join("Images", "vid4.mp4")
+    #filePath  = os.path.join("Images", "vid4.mp4")
+    filePath  = os.path.join("Images", "IMG_7491.MOV")
     cap = cv.VideoCapture(filePath)
     count = 0
     imgCount = 0
+    cv.namedWindow("Game")
+    cv.createTrackbar("pic", "Game", 0, 1, nothing)
     while True:
-        cv.createTrackbar("pic", "Game", 0, 1, nothing)
         count += 1
         ret, img = cap.read()
         cimg = img.copy()
