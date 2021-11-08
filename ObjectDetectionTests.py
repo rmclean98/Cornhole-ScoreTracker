@@ -3,13 +3,24 @@ import numpy as np
 import os
 import torch
 
+<<<<<<< HEAD
 weightfilepath = os.path.join("CornholeTrackerv4.pt")
+=======
+
+weightfilepath = os.path.join("CornholeTrackerv5.pt")
+>>>>>>> 434ce4608339a6e276258600a9d3672c523a168b
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
 model = model.to(device)
 #model.conf = 0.40
+<<<<<<< HEAD
 filePathimg  = os.path.join("Images", "vid3.mp4")
+=======
+filePathimg  = os.path.join("Images", "vid1.mp4")
+#filePathimg  = os.path.join("Images", "IMG_7494.MOV")
+tracker = cv.TrackerKCF_create()
+>>>>>>> 434ce4608339a6e276258600a9d3672c523a168b
 cap = cv.VideoCapture(filePathimg)
 #img = cv.imread(filePathimg)
 while(True):
@@ -28,6 +39,10 @@ while(True):
     cimg = img.copy()
     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
     results = model(img)
+<<<<<<< HEAD
+=======
+    #results.print()
+>>>>>>> 434ce4608339a6e276258600a9d3672c523a168b
     if not results.pandas().xyxy[0].empty:
         for index, row in results.pandas().xyxy[0].iterrows():
             if row['confidence'] > .5:
@@ -46,10 +61,3 @@ while(True):
 
 cap.release()
 cv.destroyAllWindows()
-"""
-results.print()
-results.show()  # or .show()
-
-results.xyxy[0]  # img1 predictions (tensor)
-results.pandas().xyxy[0]
-"""
