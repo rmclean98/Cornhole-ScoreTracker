@@ -103,17 +103,9 @@ class CalibrateBoard():
         cam.set(4, 720)
         self.img = cam.read()[1]
         img = self.img
-<<<<<<< HEAD
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')
-<<<<<<< HEAD
-=======
-=======
-        model = torch.hub.load('ultralytics/yolov5', 'custom', path='CornholeTrackerv5.pt')
->>>>>>> 434ce4608339a6e276258600a9d3672c523a168b
+        model = torch.hub.load('ultralytics/yolov5', 'custom', path='CornholeTrackerv7.pt')
         model.classes = [1, 2]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
->>>>>>> 04d32fa05173ea9fe44e4226e3e77e901e9b1d3c
         model = model.to(device)
         results = model(img)
         self.detection = results.pandas().xyxy[0]

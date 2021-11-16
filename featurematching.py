@@ -6,7 +6,8 @@ import torch
 
 import matplotlib.pyplot as plt
 
-weightfilepath = os.path.join("CornholeTrackerv5.pt")
+
+weightfilepath = os.path.join("CornholeTrackerv7.pt")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
@@ -16,24 +17,27 @@ model = model.to(device)
 filePath = os.path.join("Images", "IMG_7491.mov")
 cap = cv.VideoCapture(filePath)
 
-filePathImg = os.path.join("Images", "bagcal1.jpg")
+filePathImg = os.path.join("Images", "bagcal1.png")
 img = cv.imread(filePathImg)
+print(img.shape)
 cimg = img.copy()
-print(cimg.shape)
-img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+newx = img.shape[1]/640
+newy = img.shape[0]/640
+imgresized = cv.resize(img, (640,640), interpolation = cv.INTER_AREA)
+img = cv.cvtColor(imgresized, cv.COLOR_BGR2RGB)
 results = model(img)
 print(results.print())
 colors = []
 if not results.pandas().xyxy[0].empty:
     for index, row in results.pandas().xyxy[0].iterrows():
-        if row['confidence'] > .60:
-            start = (int(row['xmin']), int(row['ymin']))
-            end = (int(row['xmax']), int(row['ymax']))
+        if row['confidence'] > .30:
+            start = (int(row['xmin']*newx), int(row['ymin']*newy))
+            end = (int(row['xmax']*newx), int(row['ymax']*newy))
             print(row['xmax'])
             print(row['xmin'])
             print((row['xmax'] - row['xmin'])/2 + row['xmin'])
-            x = int(row['xmax'] - ((row['xmax']-row['xmin'])/2))
-            y = int(row['ymax'] - ((row['ymax']-row['ymin'])/2))
+            x = int(row['xmax']*newx - ((row['xmax']*newx-row['xmin']*newx)/2))
+            y = int(row['ymax']*newy - ((row['ymax']*newy-row['ymin']*newy)/2))
             print(x)
             print(y)
             print(cimg.shape)
@@ -46,7 +50,9 @@ if not results.pandas().xyxy[0].empty:
             cv.putText(cimg, strText, start, cv.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
 print(colors)
 cv.imshow("game", cimg)
-
+cv.waitKey(0)
+cv.destroyAllWindows()
+"""
 back_sub = cv.createBackgroundSubtractorMOG2(history=100,
         varThreshold=25, detectShadows=True)
 
@@ -57,6 +63,7 @@ kernel = np.ones((30,30),np.uint8)
 kernelOpen=np.ones((5,5))
 
 percent = .3
+
 print(colors[0])
 print(colors[1])
 color = (colors[0]*percent).astype(int)
@@ -148,7 +155,7 @@ while(True):
     # Close down the video stream
 cap.release()
 cv.destroyAllWindows()
-"""
+
 cv.waitKey(0)
 cv.destroyAllWindows()
 

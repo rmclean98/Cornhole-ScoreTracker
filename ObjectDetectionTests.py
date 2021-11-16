@@ -3,7 +3,8 @@ import numpy as np
 import os
 import torch
 
-weightfilepath = os.path.join("CornholeTrackerv5.pt")
+
+weightfilepath = os.path.join("CornholeTrackerv7.pt")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
@@ -27,15 +28,19 @@ while(True):
     img = resized
     """
     timer = cv.getTickCount()
+    #cimg = img.copy()
+    newx = img.shape[1]/640
+    newy = img.shape[0]/640
+    imgresized = cv.resize(img, (640,640), interpolation = cv.INTER_AREA)
     cimg = img.copy()
-    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    img = cv.cvtColor(imgresized, cv.COLOR_BGR2RGB)
     results = model(img)
     if not results.pandas().xyxy[0].empty:
         for index, row in results.pandas().xyxy[0].iterrows():
             if row['confidence'] > .5:
                 #bbox = (int(row['xmin']), int(row['ymin']), int(row['xmax']), int(row['ymax']))
-                start = (int(row['xmin']), int(row['ymin']))
-                end = (int(row['xmax']), int(row['ymax']))
+                start = (int(row['xmin']*newx), int(row['ymin']*newy))
+                end = (int(row['xmax']*newx), int(row['ymax']*newy))
                 strText = row['name'] + " - " + str(row['confidence'])
                 cv.rectangle(cimg, start, end, (255, 255, 255), 2)
                 cv.putText(cimg, strText, start, cv.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)

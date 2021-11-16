@@ -12,7 +12,7 @@ def videoCap():
     # Model
     model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
     model = model.to(device)
-    filePath  = os.path.join("Images", "IMG_7491.MOV")
+    filePath  = os.path.join("Images", "vid13.mp4")
     cap = cv.VideoCapture(filePath)
     count = 0
     imgCount = 0
