@@ -158,7 +158,6 @@ cv.destroyAllWindows()
 cv.waitKey(0)
 cv.destroyAllWindows()
 
-
 cap = cv.VideoCapture(filePath)
 
 object_detector = cv.createBackgroundSubtractorMOG2()

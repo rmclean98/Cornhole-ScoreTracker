@@ -16,8 +16,9 @@ def videoCap():
     cap = cv.VideoCapture(filePath)
     count = 0
     imgCount = 0
+    cv.namedWindow("Game")
+    cv.createTrackbar("pic", "Game", 0, 1, nothing)
     while True:
-        cv.createTrackbar("pic", "Game", 0, 1, nothing)
         count += 1
         ret, img = cap.read()
         cimg = img.copy()

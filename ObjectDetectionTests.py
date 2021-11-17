@@ -17,6 +17,16 @@ cap = cv.VideoCapture(filePathimg)
 #img = cv.imread(filePathimg)
 while(True):
     ret, img = cap.read()
+    """
+    scale_percent = 60 # percent of original size
+    width = int(img.shape[1] * scale_percent / 100)
+    height = int(img.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    resized = cv.resize(img, dim, interpolation = cv.INTER_AREA)
+    image = cv.flip(resized, 0)
+    resized = cv.flip(image, 1)
+    img = resized
+    """
     timer = cv.getTickCount()
     #cimg = img.copy()
     newx = img.shape[1]/640
@@ -25,7 +35,6 @@ while(True):
     cimg = img.copy()
     img = cv.cvtColor(imgresized, cv.COLOR_BGR2RGB)
     results = model(img)
-    #results.print()
     if not results.pandas().xyxy[0].empty:
         for index, row in results.pandas().xyxy[0].iterrows():
             if row['confidence'] > .5:
