@@ -14,10 +14,10 @@ model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)
 model.classes = [0]
 model = model.to(device)
 
-filePath = os.path.join("Images", "IMG_7491.mov")
+filePath = os.path.join("Images", "vid1.mp4")
 cap = cv.VideoCapture(filePath)
 
-filePathImg = os.path.join("Images", "bagcal1.png")
+filePathImg = os.path.join("Images", "bagcal.png")
 img = cv.imread(filePathImg)
 print(img.shape)
 cimg = img.copy()
@@ -42,17 +42,16 @@ if not results.pandas().xyxy[0].empty:
             print(y)
             print(cimg.shape)
             if x < cimg.shape[0] and y < cimg.shape[1]:
-                colour = cimg[x-110, y-110]
+                hsv_img = cv.cvtColor(cimg, cv.COLOR_BGR2HSV)
+                colour = hsv_img[x-10, y-10]
                 colors.append(colour)
-                cv.circle(cimg, (x-110, y-110), 20, (255, 0, 0), -1)
+                cv.circle(cimg, (x-10, y-10), 20, (255, 0, 0), -1)
             strText = row['name'] + " - " + str(row['confidence'])
             cv.rectangle(cimg, start, end, (255, 255, 255), 2)
             cv.putText(cimg, strText, start, cv.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
 print(colors)
 cv.imshow("game", cimg)
-cv.waitKey(0)
-cv.destroyAllWindows()
-"""
+
 back_sub = cv.createBackgroundSubtractorMOG2(history=100,
         varThreshold=25, detectShadows=True)
 
@@ -155,7 +154,7 @@ while(True):
     # Close down the video stream
 cap.release()
 cv.destroyAllWindows()
-
+"""
 cv.waitKey(0)
 cv.destroyAllWindows()
 
