@@ -88,7 +88,6 @@ class MainWindow(QMainWindow):
         self.cameraWindow._setPoints(self.circlePoints, self.boardPoints)
 
 
-
 if __name__ == '__main__':
     app = QApplication([])
     app.setStyle('Fusion')

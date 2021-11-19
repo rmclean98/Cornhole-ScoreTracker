@@ -3,11 +3,25 @@ import torch
 import numpy as np
 import cv2 as cv
 import pafy
+"""
+LabelHelper is a program to help speed up the process of labeling images to build up the dataset.
+It uses the last trained model and runs it on frames that the user picks and saves that frame
+and the label files assoicated with it.
+"""
+
+
+#Placeholder function for slider
 def nothing():
     pass
 
+"""
+VideoCap function plays a video on the screen and has a trackbar.
+When the trackbar is set to 1 it will run the detection model on that specific frame.
+Then the frame is saved to an image file and the detection results are stored in a label files,
+in YOLOv5 label format.
+"""
 def videoCap():
-    weightfilepath = os.path.join("CornholeTrackerv5.pt")
+    weightfilepath = os.path.join("CornholeTrackerv7.pt")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Model
     model = torch.hub.load('ultralytics/yolov5', 'custom', path=weightfilepath)

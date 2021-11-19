@@ -2,7 +2,11 @@ import cv2 as cv
 import numpy as np
 import os
 import torch
-
+""""
+ObjectDetectionTest plays a video on the screen and runs the model on every frame and displays the results.
+If the user has cuda installed then cuda will be used, if not then the cpu will be used. This file is mainly
+used to visually see the results of the model when its done training.
+"""
 
 weightfilepath = os.path.join("CornholeTrackerv7.pt")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

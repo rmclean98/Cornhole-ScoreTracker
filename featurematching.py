@@ -3,6 +3,10 @@ import numpy as np
 import os
 import sys
 import torch
+"""
+featurematching is a file where I am trying to figure out the best way to track the bags to differentiate the two different teams.
+This file has no relation to CorholeScoreKeeper, just a testing file.
+"""
 
 import matplotlib.pyplot as plt
 
